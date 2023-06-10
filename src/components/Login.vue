@@ -4,17 +4,19 @@
     <form>
       <h3>Login</h3>
 
+      <p class="error-message">{{ failMessage }}</p>
+
       <input 
         class="form-control" 
         name="email" 
-        v-model="email"
+        v-model="loginData.email"
         placeholder="email"
       >
 
       <input 
         class="form-control" 
         name="password" 
-        v-model="password"
+        v-model="loginData.password"
         placeholder="password"
       >
 
@@ -34,18 +36,33 @@
 </template>
 
 <script>
+import router from './../routes'
 export default {
   name: 'LoginUser',
   data () {
     return {
-      email: "",
-      password: ""
+      loginData: {
+        email: "",
+        password: "" 
+      },
+      failMessage: ""
     }
   },
   methods: {
     login (e) {
       e.preventDefault()
-      console.log(this.email)
+      this.axios
+          .post('http://localhost:8000/api/login', {data: this.loginData},)
+          .then((response) => {
+              if(response.data !== "failure") {
+                localStorage.setItem('token', response.data)
+                router.push('/dashboard')
+                this.failMessage = "";  
+              } else {
+                this.failMessage = response.data;
+              }
+          })
+          .catch((error) => {console.log(error)})
     }
   }
 }
@@ -53,6 +70,9 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+  .error-message {
+    color: red;
+  }
   form {
     width: 400px;
     border: 1px black solid;
